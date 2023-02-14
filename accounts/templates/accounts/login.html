@@ -41,22 +41,27 @@
 </style>
 
 <div class="header-bar">
-    <h1>REGISTRATION</h1>
+    <h1>LOGIN</h1>
 </div>
 
 <div class="card-body">
-    <form method="POST">
+    <form method="POST" action="">
         {% csrf_token %}
-        <label>{{form.username.label}}</label>
-        {{form.username}}
-
-        <label>{{form.password1.label}}</label>
-        {{form.password1}}
-
-        <label>{{form.password2.label}}</label>
-        {{form.password2}}
-        <br>
-        <input style="margin-top:10px;" class="button" type="submit" value="Register">
+        <div>
+            <label>Username</label>
+            <input id="username" name="username" type="text" />
+        </div>
+        
+        <div>
+            <label>Password</label>
+            <input id="password" name="password" type="password" />
+        </div>
+        <input style="margin-top:10px;" class="button" type="submit" value="Login">
     </form>
-    <p> Already have an account? <a href="{% url 'login' %}">Login</a></p>
+
+    {% for message in messages %}
+        <h2>{{message}}</h2>
+    {% endfor %}
+
+    <p>Don't have an account? <a href="{% url 'register' %}">Register</a></p>
 </div>
