@@ -7,39 +7,37 @@ from django.contrib.auth.decorators import login_required
 from .models import *
 from .forms import OrderForm, CreateUserForm
 from .filters import OrderFilter
+from .decorators import unauthtenticated_user
 
 
+@unauthtenticated_user
 def registerPage(request):
-    if request.user.is_authenticated:
-        return redirect('home')
-    else:
-        form = CreateUserForm()
+    form = CreateUserForm()
 
-        if request.method == "POST":
-            form = CreateUserForm(request.POST)
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'Account was created')
-                return redirect('login')
+    if request.method == "POST":
+        form = CreateUserForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Account was created')
+            return redirect('login')
 
     context = {'form': form}
     return render(request, 'accounts/register.html', context)
 
 
+@unauthtenticated_user
 def loginPage(request):
-    if request.user.is_authenticated:
-        return redirect('home')
-    else:
-        if request.method == "POST":
-            username = request.POST.get('username')
-            password = request.POST.get('password')
-            user = authenticate(request, username=username, password=password)
 
-            if user is not None:
-                login(request, user)
-                return redirect('home')
-            else:
-                messages.info(request, 'Username or password is incorrect')
+    if request.method == "POST":
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.info(request, 'Username or password is incorrect')
 
     context = {}
     return render(request, 'accounts/login.html', context)
