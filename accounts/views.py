@@ -3,11 +3,12 @@ from django.forms import inlineformset_factory
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
 
 from .models import *
 from .forms import OrderForm, CreateUserForm
 from .filters import OrderFilter
-from .decorators import unauthtenticated_user, allowed_users
+from .decorators import unauthtenticated_user, allowed_users, admin_only
 
 
 @unauthtenticated_user
@@ -16,9 +17,14 @@ def registerPage(request):
 
     if request.method == "POST":
         form = CreateUserForm(request.POST)
+        print('valid')
         if form.is_valid():
-            form.save()
+            user = form.save()
+            username = request.POST.get('username')
+            group = Group.objects.get(name='customer')
+            user.groups.add(group)
             messages.success(request, 'Account was created')
+            Customer.objects.create(user=user, name=username)
             return redirect('login')
 
     context = {'form': form}
@@ -49,7 +55,22 @@ def logoutUser(request):
 
 
 @login_required(login_url='login')
-@allowed_users(allowed_roles=['admin'])
+@allowed_users(allowed_roles=['customer'])
+def userPage(request):
+    orders = request.user.customer.order_set.all()
+    total_orders = orders.count()
+    pending = orders.filter(status='Pending').count()
+    delivered = orders.filter(status='Delivered').count()
+
+    context = {'orders': orders,
+        'total_orders': total_orders,
+        'pending': pending,
+        'delivered': delivered}
+    return render(request, 'accounts/user.html', context)
+
+
+@login_required(login_url='login')
+@admin_only
 def home(request):
     orders = Order.objects.all()
     customers = Customer.objects.all()
@@ -103,7 +124,7 @@ def createOrder(request, pk):
             formset.save()
             return redirect('home')
 
-    context = {'formset': formset}
+    context = {'formset': formset, 'form': form}
     return render(request, 'accounts/order_form.html', context)
 
 

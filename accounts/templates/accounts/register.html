@@ -45,18 +45,24 @@
 </div>
 
 <div class="card-body">
-    <form method="POST">
+    <form method="POST" action="">
         {% csrf_token %}
         <label>{{form.username.label}}</label>
-        {{form.username}}
+            {{form.username}}
 
         <label>{{form.password1.label}}</label>
-        {{form.password1}}
+            {{form.password1}}
 
         <label>{{form.password2.label}}</label>
-        {{form.password2}}
+            {{form.password2}}
         <br>
         <input style="margin-top:10px;" class="button" type="submit" value="Register">
     </form>
+    {{form.errors}}
+
+    {% for message in messages %}
+        <h2>{{message}}</h2>
+    {% endfor %}
+
     <p> Already have an account? <a href="{% url 'login' %}">Login</a></p>
 </div>
